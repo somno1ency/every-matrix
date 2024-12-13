@@ -14,7 +14,7 @@ public class ThreadPoolInitializer {
 
     private static boolean isInitializedForHttp = false;
 
-    private static boolean isIsInitializedForWork = false;
+    private static boolean isInitializedForWork = false;
 
     private static ExecutorService httpPool;
 
@@ -42,10 +42,10 @@ public class ThreadPoolInitializer {
      * it's a kind of cpu intensive pool, every thread may do heavy tasks, so the core size and max size need to be set close to cpu core size
      */
     public static synchronized ExecutorService getWorkPool() {
-        if (!isIsInitializedForWork) {
+        if (!isInitializedForWork) {
             workPool = new ThreadPoolExecutor(Constant.WORK_POOL_CORE_SIZE, Constant.WORK_POOL_MAX_SIZE, Constant.THREAD_KEEP_ALIVE_TIME, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(Constant.WORK_POOL_QUEUE_SIZE), new NamingThreadFactory(Constant.WORK_POOL_PREFIX), new ThreadPoolExecutor.CallerRunsPolicy());
-            isIsInitializedForWork = true;
+            isInitializedForWork = true;
         }
 
         return workPool;
