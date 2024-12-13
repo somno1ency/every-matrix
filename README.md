@@ -61,3 +61,14 @@ http://127.0.0.1:8000/app/v1/{betOfferId}/stake?sessionKey={sessionKey}
 C接口(GET)
 http://127.0.0.1:8000/app/v1/{betOfferId}/highstakes
 ```
+
+### 4.关于打包
+```
+由于项目没有使用任何包管理工具,打包所有java类时由于互相依赖,手动打包很难维护这些依赖,所以使用Makefile来进行维护,该Makefile中定义了四条命令:
+1.all: 执行build,package,run三种操作,会自动将项目编译,然后打包成jar包(文件名为stake.jar,在Makefile中定义),最后会运行该jar包
+2.build: 只执行build命令,会将项目编译
+3.package: 只执行打包命令,会将项目打包成jar包(前提是out已经存在编译后的文件)
+4.run: 只执行启动命令,会将该jar包运行
+
+在该项目的根目标下,在命令行直接运行make即可一条龙执行所有命令,如果有其他需要可以make build或者make package或者make run
+```

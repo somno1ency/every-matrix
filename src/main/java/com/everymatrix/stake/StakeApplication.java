@@ -13,13 +13,17 @@ import com.sun.net.httpserver.HttpServer;
 public class StakeApplication {
 
     public static void main(String[] args) {
+        int port = 8000;
+        String routePrefix = "/app/v1";
         try {
             HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
-            server.createContext("/app/v1", new DispatcherHandler());
+            server.createContext(routePrefix, new DispatcherHandler());
             server.setExecutor(ThreadPoolInitializer.getHttpPool());
             server.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println("web server started on port: " + port + ", visit url: http://127.0.0.1:" + port + routePrefix);
     }
 }
