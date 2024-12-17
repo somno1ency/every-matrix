@@ -6,39 +6,28 @@ package com.everymatrix.stake.model;
  */
 public class StakeInfo {
 
-    private Integer customerId;
+    private int customerId;
 
-    private Integer betOfferId;
+    private int stake;
 
-    private Integer stake;
-
-    public StakeInfo(Integer customerId, Integer betOfferId, Integer stake) {
+    public StakeInfo(int customerId, int stake) {
         this.customerId = customerId;
-        this.betOfferId = betOfferId;
         this.stake = stake;
     }
 
-    public Integer getCustomerId() {
+    public int getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(Integer customerId) {
+    public void setCustomerId(int customerId) {
         this.customerId = customerId;
     }
 
-    public Integer getBetOfferId() {
-        return betOfferId;
-    }
-
-    public void setBetOfferId(Integer betOfferId) {
-        this.betOfferId = betOfferId;
-    }
-
-    public Integer getStake() {
+    public int getStake() {
         return stake;
     }
 
-    public void setStake(Integer stake) {
+    public void setStake(int stake) {
         this.stake = stake;
     }
 }

@@ -2,8 +2,11 @@ package com.everymatrix.stake;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import com.everymatrix.stake.handler.DispatcherHandler;
-import com.everymatrix.stake.pool.ThreadPoolInitializer;
+import com.everymatrix.stake.job.CacheCleaner;
 import com.sun.net.httpserver.HttpServer;
 
 /**
@@ -13,17 +16,19 @@ import com.sun.net.httpserver.HttpServer;
 public class StakeApplication {
 
     public static void main(String[] args) {
-        int port = 8000;
-        String routePrefix = "/app/v1";
+        int port = 8001;
         try {
-            HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
-            server.createContext(routePrefix, new DispatcherHandler());
-            server.setExecutor(ThreadPoolInitializer.getHttpPool());
+            HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+            server.createContext("/", new DispatcherHandler());
+            server.setExecutor(null);
             server.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        System.out.println("web server started on port: " + port + ", visit url: http://127.0.0.1:" + port + routePrefix);
+        System.out.println("web server started on port: " + port + ", visit url: http://127.0.0.1:" + port);
+
+        ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
+        scheduled.scheduleWithFixedDelay(CacheCleaner::cleanSession, 0, 5, TimeUnit.SECONDS);
     }
 }
