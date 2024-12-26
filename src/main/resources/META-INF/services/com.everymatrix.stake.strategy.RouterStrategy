@@ -1,0 +1,3 @@
+com.everymatrix.stake.strategy.impl.GetSessionRouterStrategy
+com.everymatrix.stake.strategy.impl.PostStakeRouterStrategy
+com.everymatrix.stake.strategy.impl.GetHighStakesRouterStrategy

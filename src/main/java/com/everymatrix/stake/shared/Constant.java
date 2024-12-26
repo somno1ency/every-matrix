@@ -40,6 +40,4 @@ public interface Constant {
      * 6.others
      */
     int SESSION_EXPIRE_TIME = 10 * 60 * 1000;
-
-    String STAKE_INFO = "%d:%d";
 }

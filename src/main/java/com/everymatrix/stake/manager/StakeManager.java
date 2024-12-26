@@ -8,12 +8,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import static com.everymatrix.stake.manager.SessionManager.customerToSessionCache;
 import com.everymatrix.stake.model.StakeInfo;
 import com.everymatrix.stake.shared.Constant;
 import com.everymatrix.stake.util.ResponseUtil;
+import com.everymatrix.stake.util.TimeUtil;
 import com.sun.net.httpserver.HttpExchange;
 
 /**
@@ -25,7 +27,7 @@ public class StakeManager {
     /**
      * we use betOfferId as key, all stakes for this betting as value, so value can use List or LinkedHashMap, for save memory, we just use List, but it needs more continuous memory
      */
-    private static final ConcurrentHashMap<Integer, List<String>> bettingMap = new ConcurrentHashMap<>();
+    private static final HashMap<Integer, List<StakeInfo>> bettingMap = new HashMap<>();
 
     public static void postStake(HttpExchange exchange, int betOfferId, String sessionKey, int stake) throws IOException {
         Integer customerId = customerToSessionCache.getKeyByValue(sessionKey);
@@ -33,15 +35,13 @@ public class StakeManager {
             ResponseUtil.toResp(exchange, Constant.HTTP_BAD_REQUEST, "the sessionKey you use is invalid or expired: " + sessionKey);
             return;
         }
-        String stakeStr = String.format(Constant.STAKE_INFO, customerId, stake);
+        StakeInfo info = new StakeInfo(customerId, stake, System.currentTimeMillis());
         synchronized (bettingMap) {
-            List<String> currentBetting = bettingMap.get(betOfferId);
+            List<StakeInfo> currentBetting = bettingMap.get(betOfferId);
             if (currentBetting == null) {
-                bettingMap.put(betOfferId, new ArrayList<>(List.of(stakeStr)));
+                bettingMap.put(betOfferId, new ArrayList<>(List.of(info)));
             } else {
-                if (!currentBetting.contains(stakeStr)) {
-                    currentBetting.add(stakeStr);
-                }
+                currentBetting.add(info);
             }
         }
 
@@ -50,23 +50,25 @@ public class StakeManager {
 
     public static void getHighStakes(HttpExchange exchange, int betOfferId) throws IOException {
         List<StakeInfo> stakeList = new ArrayList<>();
+        List<StakeInfo> copyedList;
         List<Integer> customerIdList = new ArrayList<>();
         synchronized (bettingMap) {
-            List<String> currentBetting = bettingMap.get(betOfferId);
+            List<StakeInfo> currentBetting = bettingMap.get(betOfferId);
             if (currentBetting != null && !currentBetting.isEmpty()) {
-                List<StakeInfo> result = parseFromStr(currentBetting);
-                if (result != null && !result.isEmpty()) {
-                    result.sort(Comparator.comparingInt(StakeInfo::getStake).reversed());
-                    for (StakeInfo stake : result) {
-                        if (customerIdList.contains(stake.getCustomerId())) {
-                            continue;
-                        }
+                // why copy this array?
+                // because we need to clean part of each slot of bettingMap, to improve efficiency we use timestamp to do the judgement, so we can't resort the array itself
+                // PAY ATTENTION: will cost more memory
+                copyedList = new ArrayList<>(currentBetting);
+                copyedList.sort(Comparator.comparingInt(StakeInfo::getStake).reversed());
+                for (StakeInfo stake : copyedList) {
+                    if (customerIdList.contains(stake.getCustomerId())) {
+                        continue;
+                    }
 
-                        stakeList.add(stake);
-                        customerIdList.add(stake.getCustomerId());
-                        if (stakeList.size() == 20) {
-                            break;
-                        }
+                    stakeList.add(stake);
+                    customerIdList.add(stake.getCustomerId());
+                    if (stakeList.size() == 20) {
+                        break;
                     }
                 }
             }
@@ -107,28 +109,23 @@ public class StakeManager {
         os.close();
     }
 
-    private static List<StakeInfo> parseFromStr(List<String> stakeStrList) {
-        List<StakeInfo> result = new ArrayList<>();
-        if (stakeStrList == null || stakeStrList.isEmpty()) {
-            return result;
-        }
-
-        for (String stakeStr : stakeStrList) {
-            String[] pair = stakeStr.split(":");
-            if (pair.length == 2) {
-                int customerId;
-                int stake;
-                try {
-                    customerId = Integer.parseInt(pair[0]);
-                    stake = Integer.parseInt(pair[1]);
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                    return result;
+    public static void cleanBeforeToday() {
+        Iterator<List<StakeInfo>> iterator = bettingMap.values().iterator();
+        synchronized (bettingMap) {
+            while (iterator.hasNext()) {
+                List<StakeInfo> current = iterator.next();
+                if (current != null && !current.isEmpty()) {
+                    Iterator<StakeInfo> stakeIterator = current.iterator();
+                    while (stakeIterator.hasNext()) {
+                        StakeInfo info = stakeIterator.next();
+                        if (info != null && TimeUtil.isBeforeToday(info.getTimestamp())) {
+                            stakeIterator.remove();
+                        } else {
+                            break;
+                        }
+                    }
                 }
-                result.add(new StakeInfo(customerId, stake));
             }
         }
-
-        return result;
     }
 }

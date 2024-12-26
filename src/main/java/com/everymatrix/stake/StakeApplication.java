@@ -6,7 +6,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import com.everymatrix.stake.handler.DispatcherHandler;
-import com.everymatrix.stake.job.CacheCleaner;
+import com.everymatrix.stake.job.SessionCleaner;
+import com.everymatrix.stake.job.StakeCleaner;
 import com.sun.net.httpserver.HttpServer;
 
 /**
@@ -29,6 +30,7 @@ public class StakeApplication {
         System.out.println("web server started on port: " + port + ", visit url: http://127.0.0.1:" + port);
 
         ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
-        scheduled.scheduleWithFixedDelay(CacheCleaner::cleanSession, 0, 5, TimeUnit.SECONDS);
+        scheduled.scheduleWithFixedDelay(SessionCleaner::clean, 0, 5, TimeUnit.SECONDS);
+        scheduled.scheduleWithFixedDelay(StakeCleaner::clean, 0, 24, TimeUnit.HOURS);
     }
 }

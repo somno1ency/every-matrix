@@ -10,9 +10,12 @@ public class StakeInfo {
 
     private int stake;
 
-    public StakeInfo(int customerId, int stake) {
+    private long timestamp;
+
+    public StakeInfo(int customerId, int stake, long timestamp) {
         this.customerId = customerId;
         this.stake = stake;
+        this.timestamp = timestamp;
     }
 
     public int getCustomerId() {
@@ -29,5 +32,13 @@ public class StakeInfo {
 
     public void setStake(int stake) {
         this.stake = stake;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 }

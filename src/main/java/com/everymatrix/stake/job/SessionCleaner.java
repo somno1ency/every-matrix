@@ -6,9 +6,9 @@ import com.everymatrix.stake.manager.SessionManager;
  * @author mackay.zhou
  * created at 2024/12/17
  */
-public class CacheCleaner {
+public class SessionCleaner {
 
-    public static void cleanSession() {
+    public static void clean() {
         SessionManager.customerToSessionCache.cleanExpired();
     }
 }
