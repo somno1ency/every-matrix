@@ -50,7 +50,7 @@ public class StakeManager {
 
     public static void getHighStakes(HttpExchange exchange, int betOfferId) throws IOException {
         List<StakeInfo> stakeList = new ArrayList<>();
-        List<StakeInfo> copyedList;
+        List<StakeInfo> copiedList;
         List<Integer> customerIdList = new ArrayList<>();
         synchronized (bettingMap) {
             List<StakeInfo> currentBetting = bettingMap.get(betOfferId);
@@ -58,9 +58,9 @@ public class StakeManager {
                 // why copy this array?
                 // because we need to clean part of each slot of bettingMap, to improve efficiency we use timestamp to do the judgement, so we can't resort the array itself
                 // PAY ATTENTION: will cost more memory
-                copyedList = new ArrayList<>(currentBetting);
-                copyedList.sort(Comparator.comparingInt(StakeInfo::getStake).reversed());
-                for (StakeInfo stake : copyedList) {
+                copiedList = new ArrayList<>(currentBetting);
+                copiedList.sort(Comparator.comparingInt(StakeInfo::getStake).reversed());
+                for (StakeInfo stake : copiedList) {
                     if (customerIdList.contains(stake.getCustomerId())) {
                         continue;
                     }
